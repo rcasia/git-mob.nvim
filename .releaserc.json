@@ -7,12 +7,6 @@
       {
         "successComment": false
       }
-    ],
-    [
-      "@semantic-release/changelog",
-      {
-        "changelogFile": "CHANGELOG.md"
-      }
     ]
   ]
 }
