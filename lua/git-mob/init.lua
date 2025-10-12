@@ -10,19 +10,20 @@ local GitMob = {
 		return vim.system(cmd):wait()
 	end,
 }
---- Parse a coauthor line like:
----   aa, Alice Anders, alice.anders@example.org
----
---- @param str string
---- @return GitMob.Author
-local function author_from_string(str)
-	local initials, name, email = unpack(vim.split(str, ", "))
-
-	return { initials = initials, name = name, email = email }
-end
 
 --- @return GitMob.Author[]
 GitMob.get_coauthors = function()
+	--- Parse a coauthor line like:
+	---   aa, Alice Anders, alice.anders@example.org
+	---
+	--- @param str string
+	--- @return GitMob.Author
+	local function author_from_string(str)
+		local initials, name, email = unpack(vim.split(str, ", "))
+
+		return { initials = initials, name = name, email = email }
+	end
+
 	local result = GitMob.run_command({ "git-mob", "--list" })
 
 	return vim
