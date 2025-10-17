@@ -11,17 +11,6 @@ local GitMob = {
 
 --- @return GitMob.Author[]
 GitMob.get_coauthors = function()
-	--- Parse a coauthor line like:
-	---   aa, Alice Anders, alice.anders@example.org
-	---
-	--- @param str string
-	--- @return GitMob.AuthorDetails
-	local function author_from_string(str)
-		local initials, name, email = unpack(vim.split(str, ", "))
-
-		return AuthorDetails.from({ initials = initials, name = name, email = email })
-	end
-
 	--- @param lines string[]
 	--- @return GitMob.AuthorDetails[]
 	local function authors_from_lines(lines)
@@ -31,7 +20,7 @@ GitMob.get_coauthors = function()
 			:filter(function(line)
 				return line ~= ""
 			end)
-			:map(author_from_string)
+			:map(AuthorDetails.from_string)
 			--
 			:totable()
 	end

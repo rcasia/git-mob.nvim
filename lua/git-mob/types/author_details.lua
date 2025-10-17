@@ -21,4 +21,15 @@ function AuthorDetails.from(details)
 	}, AuthorDetails)
 end
 
+--- Parse a coauthor line like:
+---   aa, Alice Anders, alice.anders@example.org
+---
+--- @param str string
+--- @return GitMob.AuthorDetails
+function AuthorDetails.from_string(str)
+	local initials, name, email = unpack(vim.split(str, ", "))
+
+	return AuthorDetails.from({ initials = initials, name = name, email = email })
+end
+
 return AuthorDetails
