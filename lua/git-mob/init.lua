@@ -11,25 +11,11 @@ local GitMob = {
 
 --- @return GitMob.Author[]
 GitMob.get_coauthors = function()
-	--- @param lines string[]
-	--- @return GitMob.AuthorDetails[]
-	local function authors_from_lines(lines)
-		return vim
-			.iter(lines)
-			:map(vim.trim)
-			:filter(function(line)
-				return line ~= ""
-			end)
-			:map(AuthorDetails.from_string)
-			--
-			:totable()
-	end
-
 	local result1 = GitMob.run_command({ "git-mob", "--list" })
 	local result2 = GitMob.run_command({ "git-mob" })
 
-	local coauthors_details = authors_from_lines(vim.split(result1.stdout, "\n"))
-	local active_authors_details = authors_from_lines(vim.split(result2.stdout, "\n"))
+	local coauthors_details = AuthorDetails.from_lines(vim.split(result1.stdout, "\n"))
+	local active_authors_details = AuthorDetails.from_lines(vim.split(result2.stdout, "\n"))
 
 	return vim.iter(coauthors_details)
 		:map(function(coauthor_detail)

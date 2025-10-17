@@ -32,4 +32,18 @@ function AuthorDetails.from_string(str)
 	return AuthorDetails.from({ initials = initials, name = name, email = email })
 end
 
+--- @param lines string[]
+--- @return GitMob.AuthorDetails[]
+function AuthorDetails.from_lines(lines)
+	return vim
+		.iter(lines)
+		:map(vim.trim)
+		:filter(function(line)
+			return line ~= ""
+		end)
+		:map(AuthorDetails.from_string)
+		--
+		:totable()
+end
+
 return AuthorDetails
