@@ -34,7 +34,12 @@ cc, Carl Carlson, carl.carlson@example.org
 			end
 		end
 
-		eq(git_mob.get_coauthors(), {
+		local result = vim.iter(git_mob.get_coauthors())
+			:map(function(author)
+				return author:to_table()
+			end)
+			:totable()
+		eq(result, {
 			{ active = true, initials = "aa", name = "Alice Anders", email = "alice.anders@example.org" },
 			{ active = false, initials = "bb", name = "Bob Barnes", email = "bob.barnes@example.org" },
 		})
