@@ -27,8 +27,8 @@ bb, Bob Barnes, bob.barnes@example.org
 			if cmd[1] == "git-mob" then
 				return {
 					stdout = [[
-aa, Alice Anders, alice.anders@example.org
-cc, Carl Carlson, carl.carlson@example.org
+Alice Anders <alice.anders@example.org>
+Carl Carlson <carl.carlson@example.org>
 			]],
 				}
 			end
