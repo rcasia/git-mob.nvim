@@ -9,12 +9,12 @@ local git_mob = require("git-mob")
 
 describe("get coauthors feature", function()
 	before_each(function()
-		git_mob.run_command = function() end
+		git_mob.api.run_command = function() end
 	end)
 
 	it("gets coauthors", function()
 		--- @return vim.SystemCompleted
-		git_mob.run_command = function(cmd)
+		git_mob.api.run_command = function(cmd)
 			if cmd[1] == "git-mob" and cmd[2] == "--list" then
 				return {
 					stdout = [[
@@ -32,9 +32,11 @@ cc, Carl Carlson, carl.carlson@example.org
 			]],
 				}
 			end
+
+			error("Unexpected command: " .. table.concat(cmd, " "))
 		end
 
-		local result = vim.iter(git_mob.get_coauthors())
+		local result = vim.iter(git_mob.api.get_coauthors())
 			:map(function(author)
 				return author:to_table()
 			end)
