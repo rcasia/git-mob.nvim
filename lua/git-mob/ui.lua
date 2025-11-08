@@ -4,6 +4,22 @@ local api = require("git-mob.api")
 
 local GitMob = { ui = {} }
 
+local CoAuthorListItem = ui.createComponent("CoAuthorListItem", function(props)
+	local author = props.author
+
+	return {
+		ui.blocks
+			.Segment({
+				content = ("%s     %s"):format(author.name, author.email),
+				color = { bg = author.active and "Green" or nil },
+				interactions = {
+					SELECT = function() api.toggle_coauthor(author.initials) end,
+				},
+			})
+			:wrap(),
+	}
+end, { author = "table" })
+
 GitMob.ui.select_coauthors = function()
 	local CoAuthorSelector = ui.createComponent("CoAuthorSelector", function()
 		--- @type GitMob.Author[]
@@ -11,21 +27,7 @@ GitMob.ui.select_coauthors = function()
 
 		return {
 			ui.blocks.Segment({ content = "Select Coauthors" }):wrap(),
-			vim
-				.iter(coauthors)
-				--- @param author GitMob.Author
-				:map(function(author)
-					return ui.blocks
-						.Segment({
-							content = ("%s     %s"):format(author.details.name, author.details.email),
-							color = { bg = author.active and "Green" or nil },
-							interactions = {
-								SELECT = function() end,
-							},
-						})
-						:wrap()
-				end)
-				:totable(),
+			vim.iter(coauthors):map(function(author) return CoAuthorListItem({ author = author }) end):totable(),
 		}
 	end)
 
