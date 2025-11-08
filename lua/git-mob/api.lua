@@ -29,9 +29,7 @@ GitMob.api.is_coauthor_active = function()
 		end)
 		.map(function(data)
 			return function(email)
-				return vim.iter(data):any(function(d)
-					return d.email == email
-				end)
+				return vim.iter(data):any(function(d) return d.email == email end)
 			end
 		end).value
 end
@@ -43,14 +41,16 @@ GitMob.api.get_coauthors = function()
 		.map(AuthorDetails.from_lines)
 		.map(function(coauthors_details)
 			return vim.iter(coauthors_details)
-				:map(function(coauthor_detail)
-					return {
-						initials = coauthor_detail.initials,
-						name = coauthor_detail.name,
-						email = coauthor_detail.email,
-						active = GitMob.api.is_coauthor_active()(coauthor_detail.email),
-					}
-				end)
+				:map(
+					function(coauthor_detail)
+						return {
+							initials = coauthor_detail.initials,
+							name = coauthor_detail.name,
+							email = coauthor_detail.email,
+							active = GitMob.api.is_coauthor_active()(coauthor_detail.email),
+						}
+					end
+				)
 				:totable()
 		end).value
 end
@@ -65,8 +65,6 @@ GitMob.api.set_current_mobbers = function(initials_list)
 	GitMob.api.run_command(cmd)
 end
 
-GitMob.api.go_solo = function()
-	GitMob.api.run_command({ "git-mob", "solo" })
-end
+GitMob.api.go_solo = function() GitMob.api.run_command({ "git-mob", "solo" }) end
 
 return GitMob.api

@@ -46,9 +46,7 @@ describe("get coauthors feature", function()
 
 	it("sets current mobbers", function()
 		local cmds_executed = {}
-		git_mob.api.run_command = function(cmd)
-			cmds_executed[#cmds_executed + 1] = cmd
-		end
+		git_mob.api.run_command = function(cmd) cmds_executed[#cmds_executed + 1] = cmd end
 
 		git_mob.api.set_current_mobbers({ "aa", "bb", "cc" })
 
@@ -58,9 +56,7 @@ describe("get coauthors feature", function()
 
 	it("switches back to developing solo", function()
 		local cmds_executed = {}
-		git_mob.api.run_command = function(cmd)
-			cmds_executed[#cmds_executed + 1] = cmd
-		end
+		git_mob.api.run_command = function(cmd) cmds_executed[#cmds_executed + 1] = cmd end
 
 		git_mob.api.go_solo()
 

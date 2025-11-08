@@ -38,9 +38,7 @@ function AuthorDetails.from_lines(lines)
 	return vim
 		.iter(lines)
 		:map(vim.trim)
-		:filter(function(line)
-			return line ~= ""
-		end)
+		:filter(function(line) return line ~= "" end)
 		:map(AuthorDetails.from_string)
 		--
 		:totable()

@@ -17,18 +17,10 @@ local function Mono(...)
 		--- @generic T, U
 		--- @param fn fun(value: T): U
 		--- @return Mono<U>
-		map = function(fn)
-			return Mono(fn(unpack(v)))
-		end,
-		to_string = function()
-			return ("Mono(%s)"):format(vim.inspect(v))
-		end,
-		chain = function(fn)
-			return fn(unpack(v))
-		end,
-		prop = function(key)
-			return Mono(v[1][key])
-		end,
+		map = function(fn) return Mono(fn(unpack(v))) end,
+		to_string = function() return ("Mono(%s)"):format(vim.inspect(v)) end,
+		chain = function(fn) return fn(unpack(v)) end,
+		prop = function(key) return Mono(v[1][key]) end,
 	}
 end
 
