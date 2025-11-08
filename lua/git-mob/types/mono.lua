@@ -1,3 +1,10 @@
+--- @class Mono
+--- @field value any
+--- @field map fun(fn: fun(...: any): any): Mono<any>
+--- @field to_string fun(): string
+--- @field chain fun(fn: fun(x: any): Mono<any>): Mono<any>
+--- @field prop fun(key: any): Mono<any>
+
 --- @generic T
 --- @param ... T
 --- @return Mono<T>
@@ -18,6 +25,9 @@ local function Mono(...)
 		end,
 		chain = function(fn)
 			return fn(unpack(v))
+		end,
+		prop = function(key)
+			return Mono(v[1][key])
 		end,
 	}
 end

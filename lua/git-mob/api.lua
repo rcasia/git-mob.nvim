@@ -15,12 +15,6 @@ local GitMob = {
 	},
 }
 
---- @class Mono
---- @field value any
---- @field map fun(fn: fun(...: any): any): Mono<any>
---- @field to_string fun(): string
---- @field chain fun(fn: fun(x: any): Mono<any>): Mono<any>
-
 -- - @return GitMob.Author[]
 GitMob.api.get_coauthors = function()
 	local is_active = Mono(GitMob.api.run_command({ "git-mob" }))
@@ -43,9 +37,8 @@ GitMob.api.get_coauthors = function()
 		.value
 
 	return Mono(GitMob.api.run_command({ "git-mob", "--list" }))
-		.map(function(result)
-			return AuthorDetails.from_lines(result.stdout)
-		end)
+		.prop("stdout")
+		.map(AuthorDetails.from_lines)
 		.map(function(coauthors_details)
 			return vim.iter(coauthors_details)
 				:map(function(coauthor_detail)
