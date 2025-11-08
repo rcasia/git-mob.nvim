@@ -60,7 +60,7 @@ describe("get coauthors feature", function()
 
 		git_mob.api.go_solo()
 
-		eq(cmds_executed[1], { "git-mob", "solo" })
+		eq(cmds_executed[1], { "git", "solo" })
 		eq(#cmds_executed, 1)
 	end)
 

@@ -81,6 +81,6 @@ GitMob.api.toggle_coauthor = function(initials)
 	GitMob.api.set_current_mobbers(updated_coauthor_initials)
 end
 
-GitMob.api.go_solo = function() GitMob.api.run_command({ "git-mob", "solo" }) end
+GitMob.api.go_solo = function() GitMob.api.run_command({ "git", "solo" }) end
 
 return GitMob.api
