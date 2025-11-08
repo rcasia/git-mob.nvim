@@ -65,4 +65,8 @@ GitMob.api.set_current_mobbers = function(initials_list)
 	GitMob.api.run_command(cmd)
 end
 
+GitMob.api.go_solo = function()
+	GitMob.api.run_command({ "git-mob", "solo" })
+end
+
 return GitMob.api
