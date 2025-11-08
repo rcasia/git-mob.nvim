@@ -57,6 +57,11 @@ end
 
 --- @param initials_list string[]
 GitMob.api.set_current_mobbers = function(initials_list)
+	if #initials_list == 0 then
+		GitMob.api.go_solo()
+		return
+	end
+
 	local cmd = { "git-mob" }
 	for _, initials in ipairs(initials_list) do
 		table.insert(cmd, initials)
