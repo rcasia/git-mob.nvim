@@ -13,7 +13,6 @@ describe("get coauthors feature", function()
 	end)
 
 	it("gets coauthors", function()
-		--- @return vim.SystemCompleted
 		git_mob.api.run_command = function(cmd)
 			if cmd[1] == "git-mob" and cmd[2] == "--list" then
 				return {
@@ -43,5 +42,17 @@ describe("get coauthors feature", function()
 			{ active = true, initials = "aa", name = "Alice Anders", email = "alice.anders@example.org" },
 			{ active = false, initials = "bb", name = "Bob Barnes", email = "bob.barnes@example.org" },
 		})
+	end)
+
+	it("set current mobbers", function()
+		local cmds_executed = {}
+		git_mob.api.run_command = function(cmd)
+			cmds_executed[#cmds_executed + 1] = cmd
+		end
+
+		git_mob.api.set_current_mobbers({ "aa", "bb", "cc" })
+
+		eq(cmds_executed[1], { "git-mob", "aa", "bb", "cc" })
+		eq(#cmds_executed, 1)
 	end)
 end)

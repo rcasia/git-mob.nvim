@@ -55,4 +55,14 @@ GitMob.api.get_coauthors = function()
 		end).value
 end
 
+--- @param initials_list string[]
+GitMob.api.set_current_mobbers = function(initials_list)
+	local cmd = { "git-mob" }
+	for _, initials in ipairs(initials_list) do
+		table.insert(cmd, initials)
+	end
+
+	GitMob.api.run_command(cmd)
+end
+
 return GitMob.api
