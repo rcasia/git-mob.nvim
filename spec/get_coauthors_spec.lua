@@ -17,30 +17,28 @@ describe("get coauthors feature", function()
 		git_mob.api.run_command = function(cmd)
 			if cmd[1] == "git-mob" and cmd[2] == "--list" then
 				return {
-					stdout = [[
-aa, Alice Anders, alice.anders@example.org
-bb, Bob Barnes, bob.barnes@example.org
-			]],
+					stdout = {
+						"aa, Alice Anders, alice.anders@example.org",
+						"bb, Bob Barnes, bob.barnes@example.org",
+						"",
+					},
 				}
 			end
 
 			if cmd[1] == "git-mob" then
 				return {
-					stdout = [[
-Alice Anders <alice.anders@example.org>
-Carl Carlson <carl.carlson@example.org>
-			]],
+					stdout = {
+						"Alice Anders <alice.anders@example.org>",
+						"Carl Carlson <carl.carlson@example.org>",
+						"",
+					},
 				}
 			end
 
 			error("Unexpected command: " .. table.concat(cmd, " "))
 		end
 
-		local result = vim.iter(git_mob.api.get_coauthors())
-			:map(function(author)
-				return author:to_table()
-			end)
-			:totable()
+		local result = git_mob.api.get_coauthors()
 		eq(result, {
 			{ active = true, initials = "aa", name = "Alice Anders", email = "alice.anders@example.org" },
 			{ active = false, initials = "bb", name = "Bob Barnes", email = "bob.barnes@example.org" },
