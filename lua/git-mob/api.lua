@@ -65,6 +65,22 @@ GitMob.api.set_current_mobbers = function(initials_list)
 	GitMob.api.run_command(cmd)
 end
 
+--- @param initials string
+GitMob.api.toggle_coauthor = function(initials)
+	local coauthors = GitMob.api.get_coauthors()
+
+	local updated_coauthor_initials = vim.iter(coauthors)
+		:map(function(coauthor)
+			if coauthor.initials == initials then coauthor.active = not coauthor.active end
+			return coauthor
+		end)
+		:filter(function(coauthor) return coauthor.active end)
+		:map(function(coauthor) return coauthor.initials end)
+		:totable()
+
+	GitMob.api.set_current_mobbers(updated_coauthor_initials)
+end
+
 GitMob.api.go_solo = function() GitMob.api.run_command({ "git-mob", "solo" }) end
 
 return GitMob.api

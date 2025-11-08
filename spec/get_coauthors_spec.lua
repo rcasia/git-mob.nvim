@@ -63,4 +63,38 @@ describe("get coauthors feature", function()
 		eq(cmds_executed[1], { "git-mob", "solo" })
 		eq(#cmds_executed, 1)
 	end)
+
+	it("toggles coauthor active state", function()
+		local cmds_executed = {}
+
+		git_mob.api.run_command = function(cmd)
+			cmds_executed[#cmds_executed + 1] = cmd
+
+			if cmd[1] == "git-mob" and cmd[2] == "--list" then
+				return {
+					stdout = {
+						"aa, Alice Anders, alice.anders@example.org",
+						"bb, Bob Barnes, bob.barnes@example.org",
+						"cc, Carl Carlson, carl.carlson@example.org",
+						"",
+					},
+				}
+			end
+
+			if cmd[1] == "git-mob" then
+				return {
+					stdout = {
+						"Alice Anders <alice.anders@example.org>",
+						"Bob Barnes <bob.barnes@example.org>",
+						"Carl Carlson <carl.carlson@example.org>",
+						"",
+					},
+				}
+			end
+		end
+
+		git_mob.api.toggle_coauthor("aa")
+
+		eq(cmds_executed[#cmds_executed], { "git-mob", "bb", "cc" })
+	end)
 end)
