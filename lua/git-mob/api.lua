@@ -18,9 +18,11 @@ local GitMob = {
 
 --- @return fun(email: string): boolean
 GitMob.api.is_coauthor_active = function()
-	return Mono(GitMob.api.run_command({ "git-mob" }))
-		.prop("stdout")
-		.map(function(stdout)
+	return Mono2
+		--
+		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
+		:map(function(result) return result.stdout end)
+		:map(function(stdout)
 			return vim.iter(stdout)
 				:map(function(line)
 					local name, email = line:match("^(.-) <%s*(.-)%s*>$")
@@ -28,11 +30,12 @@ GitMob.api.is_coauthor_active = function()
 				end)
 				:totable()
 		end)
-		.map(function(data)
+		:map(function(data)
 			return function(email)
 				return vim.iter(data):any(function(d) return d.email == email end)
 			end
-		end).value
+		end)
+		:block()
 end
 
 --- @return { initials: string, name: string, email: string, active: boolean }[]
