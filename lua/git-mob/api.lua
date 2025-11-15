@@ -1,5 +1,6 @@
 local AuthorDetails = require("git-mob.types.author_details")
 local Mono = require("git-mob.types.mono")
+local Mono2 = require("git-mob.types.mono2")
 
 local GitMob = {
 	api = {
@@ -36,10 +37,12 @@ end
 
 --- @return { initials: string, name: string, email: string, active: boolean }[]
 GitMob.api.get_coauthors = function()
-	return Mono(GitMob.api.run_command({ "git-mob", "--list" }))
-		.prop("stdout")
-		.map(AuthorDetails.from_lines)
-		.map(function(coauthors_details)
+	return Mono2
+		--
+		.defer(function() return GitMob.api.run_command({ "git-mob", "--list" }) end)
+		:map(function(result) return result.stdout end)
+		:map(AuthorDetails.from_lines)
+		:map(function(coauthors_details)
 			return vim.iter(coauthors_details)
 				:map(
 					function(coauthor_detail)
@@ -52,7 +55,8 @@ GitMob.api.get_coauthors = function()
 					end
 				)
 				:totable()
-		end).value
+		end)
+		:block()
 end
 
 --- @param initials_list string[]
