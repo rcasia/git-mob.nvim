@@ -13,12 +13,15 @@ function Flux.from(list)
 	return setmetatable({ monos = monos }, Flux)
 end
 
-function Flux:to_list()
-	local list = {}
-	for i, mono in ipairs(self.monos) do
-		list[i] = mono:block()
-	end
-	return list
+--- @return Mono
+function Flux:collect_list()
+	return Mono.defer(function()
+		local list = {}
+		for i, mono in ipairs(self.monos) do
+			list[i] = mono:block()
+		end
+		return list
+	end)
 end
 
 function Flux:map(mapper_fn)
