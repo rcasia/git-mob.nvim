@@ -1,16 +1,28 @@
---- @class Mono
+--- @class Mono<T>
 --- @field private _thunk function
 local Mono = {}
 Mono.__index = Mono
 
+--- @generic T
+--- @param value T
+--- @return Mono<T>
 function Mono.from(value)
 	return setmetatable({ _thunk = function() return value end }, Mono)
 end
 
+--- @generic T
+--- @param fn fun(): T
+--- @return Mono<T>
 function Mono.defer(fn) return setmetatable({ _thunk = fn }, Mono) end
 
+--- @generic T
+--- @param self Mono<T>
+--- @return T
 function Mono:block() return self._thunk() end
 
+--- @generic T, U
+--- @param mapper_fn fun(value: T): U
+--- @return Mono<U>
 function Mono:map(mapper_fn)
 	return Mono.defer(function()
 		local value = self._thunk()
