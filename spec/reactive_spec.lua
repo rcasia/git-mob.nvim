@@ -37,6 +37,20 @@ describe("Reactive API", function()
 			eq(43, my_mono:map(function(n) return n + 1 end):block())
 		end)
 
+		it("can originate Flux from mapping a Mono", function()
+			local my_flux = Flux.from({ 1, 2, 3 })
+			local my_mono = Mono.from(10)
+
+			eq(
+				{ 11, 12, 13 },
+				my_mono
+					:flat_map_many(function(n)
+						return my_flux:map(function(x) return x + n end)
+					end)
+					:to_list()
+			)
+		end)
+
 		it("handles errors", function()
 			--
 			eq(

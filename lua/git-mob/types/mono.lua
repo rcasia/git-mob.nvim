@@ -23,6 +23,12 @@ function Mono:flatmap(mapper_fn)
 	return mapper_fn(value)
 end
 
+--- @return Flux
+function Mono:flat_map_many(mapper_fn)
+	local value = self._thunk()
+	return mapper_fn(value)
+end
+
 function Mono:on_error(error_fn)
 	return Mono.defer(function()
 		local ok, result = pcall(self._thunk)
