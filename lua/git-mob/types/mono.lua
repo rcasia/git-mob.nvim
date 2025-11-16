@@ -18,11 +18,16 @@ function Mono:map(mapper_fn)
 	end)
 end
 
+--- @param mapper_fn fun(value: any): Mono
+--- @return Mono
 function Mono:flatmap(mapper_fn)
-	local value = self._thunk()
-	return mapper_fn(value)
+	return Mono.defer(function()
+		local value = self._thunk()
+		return mapper_fn(value):block()
+	end)
 end
 
+--- @param mapper_fn fun(value: any): Flux
 --- @return Flux
 function Mono:flat_map_many(mapper_fn)
 	local value = self._thunk()
