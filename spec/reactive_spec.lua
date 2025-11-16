@@ -1,4 +1,4 @@
-local Mono = require("git-mob.types.mono2")
+local Mono = require("git-mob.types.mono")
 
 local function eq(actual, expected)
 	if not vim.deep_equal(actual, expected) then

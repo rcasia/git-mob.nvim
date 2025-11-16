@@ -1,6 +1,5 @@
 local AuthorDetails = require("git-mob.types.author_details")
 local Mono = require("git-mob.types.mono")
-local Mono2 = require("git-mob.types.mono2")
 
 local GitMob = {
 	api = {
@@ -18,7 +17,7 @@ local GitMob = {
 
 --- @return fun(email: string): boolean
 GitMob.api.is_coauthor_active = function()
-	return Mono2
+	return Mono
 		--
 		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
 		:map(function(result) return result.stdout end)
@@ -40,7 +39,7 @@ end
 
 --- @return { initials: string, name: string, email: string, active: boolean }[]
 GitMob.api.get_coauthors = function()
-	return Mono2
+	return Mono
 		--
 		.defer(function() return GitMob.api.run_command({ "git-mob", "--list" }) end)
 		:map(function(result) return result.stdout end)

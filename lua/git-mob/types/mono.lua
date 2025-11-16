@@ -1,27 +1,35 @@
---- @class Mono
---- @field value any
---- @field map fun(fn: fun(...: any): any): Mono<any>
---- @field to_string fun(): string
---- @field chain fun(fn: fun(x: any): Mono<any>): Mono<any>
---- @field prop fun(key: any): Mono<any>
+local Mono = {}
+Mono.__index = Mono
 
---- @generic T
---- @param ... T
---- @return Mono<T>
-local function Mono(...)
-	local v = { ... }
+function Mono.from(value)
+	return setmetatable({ _thunk = function() return value end }, Mono)
+end
 
-	--- @type Mono
-	return {
-		value = unpack(v),
-		--- @generic T, U
-		--- @param fn fun(value: T): U
-		--- @return Mono<U>
-		map = function(fn) return Mono(fn(unpack(v))) end,
-		to_string = function() return ("Mono(%s)"):format(vim.inspect(v)) end,
-		chain = function(fn) return fn(unpack(v)) end,
-		prop = function(key) return Mono(v[1][key]) end,
-	}
+function Mono.defer(fn) return setmetatable({ _thunk = fn }, Mono) end
+
+function Mono:block() return self._thunk() end
+
+function Mono:map(mapper_fn)
+	return Mono.defer(function()
+		local value = self._thunk()
+		return mapper_fn(value)
+	end)
+end
+
+function Mono:flatmap(mapper_fn)
+	local value = self._thunk()
+	return mapper_fn(value)
+end
+
+function Mono:on_error(error_fn)
+	return Mono.defer(function()
+		local ok, result = pcall(self._thunk)
+		if ok then
+			return result
+		else
+			return error_fn(result)
+		end
+	end)
 end
 
 return Mono
