@@ -1,3 +1,4 @@
+local Flux = require("git-mob.types.flux")
 local Mono = require("git-mob.types.mono")
 
 local function eq(actual, expected)
@@ -6,45 +7,58 @@ local function eq(actual, expected)
 	end
 end
 
-describe("Reactive Mono", function()
-	it("creates a mono from value", function()
-		--
-		eq(42, Mono.from(42):block())
+describe("Reactive API", function()
+	describe("Mono", function()
+		it("creates a mono from value", function()
+			--
+			eq(42, Mono.from(42):block())
+		end)
+
+		it("creates a mono that can map", function()
+			eq(41, Mono.from(42):map(function(n) return n - 1 end):block())
+		end)
+
+		it("creates a mono that can flatMap", function()
+			eq(
+				41,
+				Mono
+					--
+					.from(42)
+					:flatmap(function(n) return Mono.from(n - 1) end)
+					:block()
+			)
+		end)
+
+		it("can be extended multiple times", function()
+			local my_mono = Mono.from(42)
+
+			eq(42, my_mono:block())
+			eq(41, my_mono:map(function(n) return n - 1 end):block())
+			eq(43, my_mono:map(function(n) return n + 1 end):block())
+		end)
+
+		it("handles errors", function()
+			--
+			eq(
+				0,
+				Mono
+					--
+					.from(42)
+					:map(function() error("boom") end)
+					:on_error(function() return 0 end)
+					:block()
+			)
+		end)
 	end)
 
-	it("creates a mono that can map", function()
-		eq(41, Mono.from(42):map(function(n) return n - 1 end):block())
-	end)
+	describe("Flux", function()
+		it("creates a flux from list", function()
+			--
+			eq({ 1, 2, 3 }, Flux.from({ 1, 2, 3 }):to_list())
+		end)
 
-	it("creates a mono that can flatMap", function()
-		eq(
-			41,
-			Mono
-				--
-				.from(42)
-				:flatmap(function(n) return Mono.from(n - 1) end)
-				:block()
-		)
-	end)
-
-	it("can be extended multiple times", function()
-		local my_mono = Mono.from(42)
-
-		eq(42, my_mono:block())
-		eq(41, my_mono:map(function(n) return n - 1 end):block())
-		eq(43, my_mono:map(function(n) return n + 1 end):block())
-	end)
-
-	it("handles errors", function()
-		--
-		eq(
-			0,
-			Mono
-				--
-				.from(42)
-				:map(function() error("boom") end)
-				:on_error(function() return 0 end)
-				:block()
-		)
+		it("creates a flux that can map", function()
+			eq({ 4, 5, 6 }, Flux.from({ 1, 2, 3 }):map(function(n) return n + 3 end):to_list())
+		end)
 	end)
 end)

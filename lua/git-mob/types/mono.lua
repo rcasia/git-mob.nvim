@@ -1,3 +1,5 @@
+--- @class Mono
+--- @field private _thunk function
 local Mono = {}
 Mono.__index = Mono
 
