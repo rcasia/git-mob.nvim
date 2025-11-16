@@ -1,4 +1,5 @@
 local AuthorDetails = require("git-mob.types.author_details")
+local Flux = require("git-mob.types.flux")
 local Mono = require("git-mob.types.mono")
 
 local GitMob = {
@@ -20,15 +21,12 @@ GitMob.api.is_coauthor_active = function()
 	return Mono
 		--
 		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
-		:map(function(result) return result.stdout end)
-		:map(function(stdout)
-			return vim.iter(stdout)
-				:map(function(line)
-					local name, email = line:match("^(.-) <%s*(.-)%s*>$")
-					return { name = name, email = email }
-				end)
-				:totable()
+		:flat_map_many(function(result) return Flux.from(result.stdout) end)
+		:map(function(line)
+			local name, email = line:match("^(.-) <%s*(.-)%s*>$")
+			return { name = name, email = email }
 		end)
+		:collect_list()
 		:map(function(data)
 			return function(email)
 				return vim.iter(data):any(function(d) return d.email == email end)
@@ -44,20 +42,18 @@ GitMob.api.get_coauthors = function()
 		.defer(function() return GitMob.api.run_command({ "git-mob", "--list" }) end)
 		:map(function(result) return result.stdout end)
 		:map(AuthorDetails.from_lines)
-		:map(function(coauthors_details)
-			return vim.iter(coauthors_details)
-				:map(
-					function(coauthor_detail)
-						return {
-							initials = coauthor_detail.initials,
-							name = coauthor_detail.name,
-							email = coauthor_detail.email,
-							active = GitMob.api.is_coauthor_active()(coauthor_detail.email),
-						}
-					end
-				)
-				:totable()
-		end)
+		:flat_map_many(Flux.from)
+		:map(
+			function(coauthor_detail)
+				return {
+					initials = coauthor_detail.initials,
+					name = coauthor_detail.name,
+					email = coauthor_detail.email,
+					active = GitMob.api.is_coauthor_active()(coauthor_detail.email),
+				}
+			end
+		)
+		:collect_list()
 		:block()
 end
 
