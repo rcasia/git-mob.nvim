@@ -74,4 +74,36 @@ describe("ui", function()
 
 		assert(toggled == "bb", ("Expected 'bb' to be toggled, got: %s"):format(tostring(toggled)))
 	end)
+
+	it("buffer reflects updated state after toggle", function()
+		local active_aa = true
+		git_mob.api.get_coauthors = function()
+			return {
+				{ initials = "aa", name = "Alice Anders", email = "alice@example.org", active = active_aa },
+				{ initials = "bb", name = "Bob Barnes", email = "bob@example.org", active = false },
+			}
+		end
+		git_mob.api.toggle_coauthor = function() active_aa = not active_aa end
+
+		local result = git_mob.ui.select_coauthors()
+		buf, win = result.buf, result.win
+
+		-- before toggle: line 1 is active
+		local before = vim.api.nvim_buf_get_lines(buf, 0, 0, false)
+		assert(
+			vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1]:sub(1, 3) == "[*]",
+			"Expected [*] before toggle"
+		)
+
+		vim.api.nvim_set_current_win(win)
+		vim.api.nvim_win_set_cursor(win, { 1, 0 })
+		local cr = vim.iter(vim.api.nvim_buf_get_keymap(buf, "n")):find(function(m) return m.lhs == "<CR>" end)
+		cr.callback()
+
+		-- after toggle: line 1 should now show as inactive
+		assert(
+			vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1]:sub(1, 3) == "[ ]",
+			"Expected [ ] after toggle"
+		)
+	end)
 end)
