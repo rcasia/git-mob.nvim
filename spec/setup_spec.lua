@@ -1,7 +1,17 @@
 local git_mob = require("git-mob")
 
 describe("setup", function()
+	local original_run_command
+	local original_select_coauthors
+
+	before_each(function()
+		original_run_command = git_mob.api.run_command
+		original_select_coauthors = git_mob.ui.select_coauthors
+	end)
+
 	after_each(function()
+		git_mob.api.run_command = original_run_command
+		git_mob.ui.select_coauthors = original_select_coauthors
 		pcall(vim.api.nvim_del_user_command, "GitMobWho")
 		pcall(vim.api.nvim_del_user_command, "GitMobSolo")
 		pcall(vim.api.nvim_del_user_command, "GitMobSelect")
