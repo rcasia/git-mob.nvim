@@ -51,4 +51,27 @@ describe("ui", function()
 		assert(lines[1]:sub(1, 3) == "[*]", ("Expected active marker in line 1: %s"):format(lines[1]))
 		assert(lines[2]:sub(1, 3) == "[ ]", ("Expected inactive marker in line 2: %s"):format(lines[2]))
 	end)
+
+	it("pressing <CR> on a line calls toggle_coauthor with the correct initials", function()
+		git_mob.api.get_coauthors = function()
+			return {
+				{ initials = "aa", name = "Alice Anders", email = "alice@example.org", active = true },
+				{ initials = "bb", name = "Bob Barnes", email = "bob@example.org", active = false },
+			}
+		end
+
+		local toggled = nil
+		git_mob.api.toggle_coauthor = function(initials) toggled = initials end
+
+		local result = git_mob.ui.select_coauthors()
+		buf, win = result.buf, result.win
+
+		-- position cursor on line 2 and fire the <CR> keymap
+		vim.api.nvim_set_current_win(win)
+		vim.api.nvim_win_set_cursor(win, { 2, 0 })
+		local cr = vim.iter(vim.api.nvim_buf_get_keymap(buf, "n")):find(function(m) return m.lhs == "<CR>" end)
+		cr.callback()
+
+		assert(toggled == "bb", ("Expected 'bb' to be toggled, got: %s"):format(tostring(toggled)))
+	end)
 end)
