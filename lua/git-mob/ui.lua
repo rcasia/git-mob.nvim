@@ -50,7 +50,9 @@ GitMob.ui.select_coauthors = function()
 		local initials = line:match("^%[.%] (%S+)")
 		if initials then
 			api.toggle_coauthor(initials)
-			coauthors = api.get_coauthors()
+			for _, c in ipairs(coauthors) do
+				if c.initials == initials then c.active = not c.active end
+			end
 			render(buf, coauthors)
 		end
 	end, { buffer = buf, nowait = true })
