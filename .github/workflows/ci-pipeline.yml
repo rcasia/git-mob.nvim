@@ -6,12 +6,11 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    name: Build & Test (nvim ${{ matrix.nvim_version }}, ${{ matrix.os }})
+    runs-on: ubuntu-latest
+    name: Build & Test (nvim ${{ matrix.nvim_version }})
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        nvim_version: [stable, v0.10.0]
+        nvim_version: [stable, nightly, v0.10.0]
     steps:
       - name: checkout
         uses: actions/checkout@v5
