@@ -4,7 +4,7 @@ Neovim plugin for [git-mob](https://github.com/rkotze/git-mob) — manage co-aut
 
 ## Requirements
 
-- Neovim >= 0.9
+- Neovim >= 0.10
 - [git-mob](https://github.com/rkotze/git-mob) CLI installed (`npm install -g git-mob`)
 
 ## Installation
