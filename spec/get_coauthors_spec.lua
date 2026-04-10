@@ -7,6 +7,17 @@ end
 
 local git_mob = require("git-mob")
 
+describe("run_command", function()
+	it("raises a Lua error when the command exits with a non-zero code", function()
+		local ok, err = pcall(git_mob.api.run_command, { "git", "not-a-real-git-command" })
+		assert(not ok, "Expected run_command to raise an error but it did not")
+		assert(
+			type(err) == "string" and err:find("not%-a%-real%-git%-command"),
+			("Expected error message to mention the command, got: %s"):format(tostring(err))
+		)
+	end)
+end)
+
 describe("get coauthors feature", function()
 	before_each(function()
 		git_mob.api.run_command = function() end

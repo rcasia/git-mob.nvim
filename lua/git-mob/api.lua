@@ -6,6 +6,14 @@ local GitMob = {
 		--- @return { stdout: string[] }
 		run_command = function(cmd)
 			local result = vim.system(cmd):wait()
+			if result.code ~= 0 then
+				error(
+					("git-mob: command failed: %s\n%s"):format(
+						table.concat(cmd, " "),
+						result.stderr or ""
+					)
+				)
+			end
 			return { stdout = vim.split(result.stdout, "\n") }
 		end,
 	},

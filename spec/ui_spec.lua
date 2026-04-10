@@ -4,17 +4,20 @@ describe("ui", function()
 	local buf, win
 	local original_get_coauthors
 	local original_toggle_coauthor
+	local original_notify
 
 	before_each(function()
 		buf = nil
 		win = nil
 		original_get_coauthors = git_mob.api.get_coauthors
 		original_toggle_coauthor = git_mob.api.toggle_coauthor
+		original_notify = vim.notify
 	end)
 
 	after_each(function()
 		git_mob.api.get_coauthors = original_get_coauthors
 		git_mob.api.toggle_coauthor = original_toggle_coauthor
+		vim.notify = original_notify
 		if win and vim.api.nvim_win_is_valid(win) then vim.api.nvim_win_close(win, true) end
 		if buf and vim.api.nvim_buf_is_valid(buf) then vim.api.nvim_buf_delete(buf, { force = true }) end
 	end)
@@ -104,6 +107,29 @@ describe("ui", function()
 		assert(
 			vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1]:sub(1, 3) == "[ ]",
 			"Expected [ ] after toggle"
+		)
+	end)
+
+	it("notifies the user with an error when get_coauthors fails", function()
+		git_mob.api.get_coauthors = function()
+			error("git-mob: command failed: git-mob --list")
+		end
+
+		local notify_msg, notify_level
+		vim.notify = function(msg, level)
+			notify_msg = msg
+			notify_level = level
+		end
+
+		git_mob.ui.select_coauthors()
+
+		assert(
+			notify_level == vim.log.levels.ERROR,
+			("Expected ERROR level notification, got: %s"):format(tostring(notify_level))
+		)
+		assert(
+			type(notify_msg) == "string" and notify_msg:find("git%-mob"),
+			("Expected error message to mention git-mob, got: %s"):format(tostring(notify_msg))
 		)
 	end)
 end)

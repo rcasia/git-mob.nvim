@@ -24,9 +24,13 @@ local function render(buf, coauthors)
 	end
 end
 
---- @return { buf: integer, win: integer }
+--- @return { buf: integer, win: integer }|nil
 GitMob.ui.select_coauthors = function()
-	local coauthors = api.get_coauthors()
+	local ok, coauthors = pcall(api.get_coauthors)
+	if not ok then
+		vim.notify(tostring(coauthors), vim.log.levels.ERROR)
+		return nil
+	end
 	local buf = vim.api.nvim_create_buf(false, true)
 	render(buf, coauthors)
 
