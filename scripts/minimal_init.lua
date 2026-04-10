@@ -3,7 +3,6 @@
 
 local DEPENDENCIES_DIR = "./.dependencies"
 local MINITEST_DIR = DEPENDENCIES_DIR .. "/mini.nvim"
-local ASCIIUI_DIR = DEPENDENCIES_DIR .. "/ascii-ui.nvim"
 
 -- Speed up startup
 for _, p in ipairs({
@@ -45,23 +44,12 @@ local function ensure_repo(path, url)
 end
 
 ensure_repo(MINITEST_DIR, "https://github.com/nvim-mini/mini.nvim")
-ensure_repo(ASCIIUI_DIR, "https://github.com/rcasia/ascii-ui.nvim")
 
 -- ─────────────────────────────────────────────────────────────
 -- Runtime path setup
 -- ─────────────────────────────────────────────────────────────
 vim.opt.runtimepath:append(".")
 vim.opt.runtimepath:append(MINITEST_DIR)
-vim.opt.runtimepath:append(ASCIIUI_DIR)
-
--- ─────────────────────────────────────────────────────────────
--- Initialize ascii-ui
--- ─────────────────────────────────────────────────────────────
-require("ascii-ui").setup({
-	-- minimal config suitable for tests
-	auto_render = false,
-	enable_logs = false,
-})
 
 -- ─────────────────────────────────────────────────────────────
 -- Enable mini.test
