@@ -16,6 +16,23 @@ describe("run_command", function()
 			("Expected error message to mention the command, got: %s"):format(tostring(err))
 		)
 	end)
+
+	it("calls on_done(nil) when command succeeds (async mode)", function()
+		local result = "NOT_CALLED"
+		git_mob.api.run_command({ "git", "--version" }, function(err) result = err end)
+		vim.wait(1000, function() return result ~= "NOT_CALLED" end)
+		assert(result == nil, ("Expected on_done(nil), got: %s"):format(tostring(result)))
+	end)
+
+	it("calls on_done(err) when command fails (async mode)", function()
+		local result = "NOT_CALLED"
+		git_mob.api.run_command({ "git", "not-a-real-git-command" }, function(err) result = err end)
+		vim.wait(1000, function() return result ~= "NOT_CALLED" end)
+		assert(
+			type(result) == "string" and result:find("not%-a%-real%-git%-command"),
+			("Expected on_done(err) mentioning the command, got: %s"):format(tostring(result))
+		)
+	end)
 end)
 
 describe("get coauthors feature", function()
@@ -88,7 +105,7 @@ describe("get coauthors feature", function()
 	it("toggles coauthor active state", function()
 		local cmds_executed = {}
 
-		git_mob.api.run_command = function(cmd)
+		git_mob.api.run_command = function(cmd, on_done)
 			cmds_executed[#cmds_executed + 1] = cmd
 
 			if cmd[1] == "git-mob" and cmd[2] == "--list" then
@@ -103,6 +120,7 @@ describe("get coauthors feature", function()
 			end
 
 			if cmd[1] == "git-mob" then
+				if on_done then on_done(nil) return end
 				return {
 					stdout = {
 						"Alice Anders <alice.anders@example.org>",
@@ -122,7 +140,7 @@ describe("get coauthors feature", function()
 	it("toggles coauthor active state when only one left active goes solo", function()
 		local cmds_executed = {}
 
-		git_mob.api.run_command = function(cmd)
+		git_mob.api.run_command = function(cmd, on_done)
 			cmds_executed[#cmds_executed + 1] = cmd
 
 			if cmd[1] == "git-mob" and cmd[2] == "--list" then
@@ -137,6 +155,7 @@ describe("get coauthors feature", function()
 			end
 
 			if cmd[1] == "git-mob" then
+				if on_done then on_done(nil) return end
 				return {
 					stdout = {
 						"Alice Anders <alice.anders@example.org>",
@@ -144,11 +163,44 @@ describe("get coauthors feature", function()
 					},
 				}
 			end
+
+			if cmd[1] == "git" and cmd[2] == "solo" then
+				if on_done then on_done(nil) return end
+			end
 		end
 
 		git_mob.api.toggle_coauthor("aa")
 
 		eq(cmds_executed[#cmds_executed], { "git", "solo" })
+	end)
+
+	it("calls on_done after toggling coauthor (async mode)", function()
+		local done_err = "NOT_CALLED"
+
+		git_mob.api.run_command = function(cmd, on_done)
+			if cmd[1] == "git-mob" and cmd[2] == "--list" then
+				return {
+					stdout = {
+						"aa, Alice Anders, alice.anders@example.org",
+						"bb, Bob Barnes, bob.barnes@example.org",
+						"",
+					},
+				}
+			end
+			-- git-mob with no args: current mob (only bb active)
+			if cmd[1] == "git-mob" and not on_done then
+				return { stdout = { "Bob Barnes <bob.barnes@example.org>", "" } }
+			end
+			-- final async dispatch: git-mob aa bb
+			if cmd[1] == "git-mob" and on_done then
+				on_done(nil)
+				return
+			end
+		end
+
+		git_mob.api.toggle_coauthor("aa", function(err) done_err = err end)
+
+		assert(done_err == nil, ("Expected on_done(nil), got: %s"):format(tostring(done_err)))
 	end)
 
 	it("gets current mob members", function()

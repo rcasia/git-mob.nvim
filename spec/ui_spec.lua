@@ -64,7 +64,7 @@ describe("ui", function()
 		end
 
 		local toggled = nil
-		git_mob.api.toggle_coauthor = function(initials) toggled = initials end
+		git_mob.api.toggle_coauthor = function(initials, _) toggled = initials end
 
 		local result = git_mob.ui.select_coauthors()
 		buf, win = result.buf, result.win
@@ -74,7 +74,6 @@ describe("ui", function()
 		local cr = vim.iter(vim.api.nvim_buf_get_keymap(buf, "n")):find(function(m) return m.lhs == "<CR>" end)
 		cr.callback()
 
-		vim.wait(100, function() return toggled ~= nil end)
 		assert(toggled == "bb", ("Expected 'bb' to be toggled, got: %s"):format(tostring(toggled)))
 	end)
 

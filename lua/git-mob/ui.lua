@@ -57,9 +57,8 @@ GitMob.ui.select_coauthors = function()
 				if c.initials == initials then c.active = not c.active end
 			end
 			render(buf, coauthors)
-			vim.schedule(function()
-				local ok, err = pcall(api.toggle_coauthor, initials)
-				if not ok then vim.notify(tostring(err), vim.log.levels.ERROR) end
+			api.toggle_coauthor(initials, function(err)
+				if err then vim.notify(err, vim.log.levels.ERROR) end
 			end)
 		end
 	end, { buffer = buf, nowait = true })

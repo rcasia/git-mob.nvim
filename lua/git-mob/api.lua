@@ -3,8 +3,24 @@ local AuthorDetails = require("git-mob.types.author_details")
 local GitMob = {
 	api = {
 		--- @param cmd string[]
-		--- @return { stdout: string[] }
-		run_command = function(cmd)
+		--- @param on_done fun(err: string|nil)|nil
+		--- @return { stdout: string[] }|nil
+		run_command = function(cmd, on_done)
+			if on_done then
+				vim.system(cmd, {}, function(result)
+					vim.schedule(function()
+						if result.code ~= 0 then
+							on_done(("git-mob: command failed: %s\n%s"):format(
+								table.concat(cmd, " "),
+								result.stderr or ""
+							))
+						else
+							on_done(nil)
+						end
+					end)
+				end)
+				return nil
+			end
 			local result = vim.system(cmd):wait()
 			if result.code ~= 0 then
 				error(
@@ -51,7 +67,8 @@ GitMob.api.set_current_mobbers = function(initials_list)
 end
 
 --- @param initials string
-GitMob.api.toggle_coauthor = function(initials)
+--- @param on_done fun(err: string|nil)|nil
+GitMob.api.toggle_coauthor = function(initials, on_done)
 	local active_initials = vim.iter(GitMob.api.get_coauthors())
 		:map(function(c)
 			if c.initials == initials then c.active = not c.active end
@@ -60,7 +77,10 @@ GitMob.api.toggle_coauthor = function(initials)
 		:filter(function(c) return c.active end)
 		:map(function(c) return c.initials end)
 		:totable()
-	GitMob.api.set_current_mobbers(active_initials)
+	local cmd = #active_initials == 0
+		and { "git", "solo" }
+		or vim.list_extend({ "git-mob" }, active_initials)
+	GitMob.api.run_command(cmd, on_done)
 end
 
 --- @return { name: string, email: string }[]
