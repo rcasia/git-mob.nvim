@@ -108,7 +108,7 @@ describe("get coauthors feature", function()
 		eq(cmds_executed[#cmds_executed], { "git-mob", "bb", "cc" })
 	end)
 
-	it("toggles coauthor active state", function()
+	it("toggles coauthor active state when only one left active goes solo", function()
 		local cmds_executed = {}
 
 		git_mob.api.run_command = function(cmd)
@@ -138,5 +138,26 @@ describe("get coauthors feature", function()
 		git_mob.api.toggle_coauthor("aa")
 
 		eq(cmds_executed[#cmds_executed], { "git", "solo" })
+	end)
+
+	it("gets current mob members", function()
+		git_mob.api.run_command = function(cmd)
+			if cmd[1] == "git-mob" then
+				return {
+					stdout = {
+						"Alice Anders <alice.anders@example.org>",
+						"Bob Barnes <bob.barnes@example.org>",
+						"",
+					},
+				}
+			end
+			error("Unexpected command: " .. table.concat(cmd, " "))
+		end
+
+		local result = git_mob.api.get_current_mob()
+		eq(result, {
+			{ name = "Alice Anders", email = "alice.anders@example.org" },
+			{ name = "Bob Barnes", email = "bob.barnes@example.org" },
+		})
 	end)
 end)

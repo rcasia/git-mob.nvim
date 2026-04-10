@@ -88,6 +88,21 @@ GitMob.api.toggle_coauthor = function(initials)
 	GitMob.api.set_current_mobbers(updated_coauthor_initials)
 end
 
+--- @return { name: string, email: string }[]
+GitMob.api.get_current_mob = function()
+	return Mono
+		--
+		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
+		:flat_map_many(function(result) return Flux.from(result.stdout) end)
+		:map(function(line)
+			local name, email = line:match("^(.-) <%s*(.-)%s*>$")
+			if name then return { name = name, email = email } end
+		end)
+		:collect_list()
+		:map(function(data) return vim.iter(data):filter(function(d) return d ~= nil end):totable() end)
+		:block()
+end
+
 GitMob.api.go_solo = function() GitMob.api.run_command({ "git", "solo" }) end
 
 return GitMob.api
