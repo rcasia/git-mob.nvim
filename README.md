@@ -14,31 +14,15 @@ Neovim plugin for [git-mob](https://github.com/rkotze/git-mob) — manage co-aut
 ```lua
 {
   "rcasia/git-mob.nvim",
-  cmd = { "GitMobWho", "GitMobSolo", "GitMobSelect" },
-  keys = {
-    { "<leader>gm", "<cmd>GitMobSelect<cr>", desc = "Select co-authors" },
-    { "<leader>gw", "<cmd>GitMobWho<cr>",    desc = "Show current mob" },
-    { "<leader>gs", "<cmd>GitMobSolo<cr>",   desc = "Go solo" },
-  },
   config = function()
-    require("git-mob").setup()
+    local git_mob = require("git-mob")
+    vim.keymap.set("n", "<leader>gm", git_mob.ui.select_coauthors, { desc = "Select co-authors" })
+    vim.keymap.set("n", "<leader>gs", git_mob.api.go_solo,         { desc = "Go solo" })
   end,
 }
 ```
 
-`cmd` enables lazy-loading — the plugin is only loaded when one of the commands is first invoked. `keys` wires up the suggested keymaps and also triggers lazy-loading when any of them is pressed.
-
-## Commands
-
-| Command | Description |
-|---|---|
-| `:GitMobWho` | Show the current mob (active co-authors) |
-| `:GitMobSolo` | Clear all co-authors and go solo |
-| `:GitMobSelect` | Open the interactive co-author selector |
-
 ## API
-
-The underlying API is available if you prefer to bind keys yourself:
 
 ```lua
 local git_mob = require("git-mob")
