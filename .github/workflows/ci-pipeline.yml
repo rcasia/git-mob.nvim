@@ -13,7 +13,7 @@ jobs:
         nvim_version: [stable, nightly, v0.10.0]
     steps:
       - name: checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: rhysd/action-setup-vim@v1
         with:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Node.js
