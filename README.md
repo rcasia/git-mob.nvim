@@ -14,11 +14,10 @@ Neovim plugin for [git-mob](https://github.com/rkotze/git-mob) — manage co-aut
 ```lua
 {
   "rcasia/git-mob.nvim",
-  config = function()
-    local git_mob = require("git-mob")
-    vim.keymap.set("n", "<leader>gm", git_mob.ui.select_coauthors, { desc = "Select co-authors" })
-    vim.keymap.set("n", "<leader>gs", git_mob.api.go_solo,         { desc = "Go solo" })
-  end,
+  keys = {
+    { "<leader>gm", function() require("git-mob").ui.select_coauthors() end, desc = "Select co-authors" },
+    { "<leader>gs", function() require("git-mob").api.go_solo() end,         desc = "Go solo" },
+  },
 }
 ```
 
