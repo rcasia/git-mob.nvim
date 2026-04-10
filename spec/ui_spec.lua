@@ -55,7 +55,7 @@ describe("ui", function()
 		assert(lines[2]:sub(1, 3) == "[ ]", ("Expected inactive marker in line 2: %s"):format(lines[2]))
 	end)
 
-	it("pressing <CR> on a line calls toggle_coauthor with the correct initials", function()
+	it("pressing <CR> calls toggle_coauthor with the correct initials", function()
 		git_mob.api.get_coauthors = function()
 			return {
 				{ initials = "aa", name = "Alice Anders", email = "alice@example.org", active = true },
@@ -69,13 +69,37 @@ describe("ui", function()
 		local result = git_mob.ui.select_coauthors()
 		buf, win = result.buf, result.win
 
-		-- position cursor on line 2 and fire the <CR> keymap
 		vim.api.nvim_set_current_win(win)
 		vim.api.nvim_win_set_cursor(win, { 2, 0 })
 		local cr = vim.iter(vim.api.nvim_buf_get_keymap(buf, "n")):find(function(m) return m.lhs == "<CR>" end)
 		cr.callback()
 
+		vim.wait(100, function() return toggled ~= nil end)
 		assert(toggled == "bb", ("Expected 'bb' to be toggled, got: %s"):format(tostring(toggled)))
+	end)
+
+	it("buffer re-renders immediately before toggle_coauthor fires", function()
+		git_mob.api.get_coauthors = function()
+			return {
+				{ initials = "aa", name = "Alice Anders", email = "alice@example.org", active = true },
+				{ initials = "bb", name = "Bob Barnes", email = "bob@example.org", active = false },
+			}
+		end
+		git_mob.api.toggle_coauthor = function(_) end
+
+		local result = git_mob.ui.select_coauthors()
+		buf, win = result.buf, result.win
+
+		vim.api.nvim_set_current_win(win)
+		vim.api.nvim_win_set_cursor(win, { 2, 0 })
+		local cr = vim.iter(vim.api.nvim_buf_get_keymap(buf, "n")):find(function(m) return m.lhs == "<CR>" end)
+		cr.callback()
+
+		-- buffer must already show [*] synchronously, before the scheduled call fires
+		assert(
+			vim.api.nvim_buf_get_lines(buf, 1, 2, false)[1]:sub(1, 3) == "[*]",
+			"Expected [*] immediately after CR (optimistic update)"
+		)
 	end)
 
 	it("buffer reflects updated state after toggle", function()

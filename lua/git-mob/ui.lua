@@ -53,11 +53,14 @@ GitMob.ui.select_coauthors = function()
 		local line = vim.api.nvim_buf_get_lines(buf, cursor[1] - 1, cursor[1], false)[1]
 		local initials = line:match("^%[.%] (%S+)")
 		if initials then
-			api.toggle_coauthor(initials)
 			for _, c in ipairs(coauthors) do
 				if c.initials == initials then c.active = not c.active end
 			end
 			render(buf, coauthors)
+			vim.schedule(function()
+				local ok, err = pcall(api.toggle_coauthor, initials)
+				if not ok then vim.notify(tostring(err), vim.log.levels.ERROR) end
+			end)
 		end
 	end, { buffer = buf, nowait = true })
 
