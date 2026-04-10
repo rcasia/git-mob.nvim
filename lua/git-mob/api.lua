@@ -1,6 +1,4 @@
 local AuthorDetails = require("git-mob.types.author_details")
-local Flux = require("git-mob.types.flux")
-local Mono = require("git-mob.types.mono")
 
 local GitMob = {
 	api = {
@@ -8,53 +6,31 @@ local GitMob = {
 		--- @return { stdout: string[] }
 		run_command = function(cmd)
 			local result = vim.system(cmd):wait()
-
-			return {
-				stdout = vim.split(result.stdout, "\n"),
-			}
+			return { stdout = vim.split(result.stdout, "\n") }
 		end,
 	},
 }
 
 --- @return fun(email: string): boolean
 GitMob.api.is_coauthor_active = function()
-	return Mono
-		--
-		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
-		:flat_map_many(function(result) return Flux.from(result.stdout) end)
-		:map(function(line)
-			local name, email = line:match("^(.-) <%s*(.-)%s*>$")
-			return { name = name, email = email }
+	local stdout = GitMob.api.run_command({ "git-mob" }).stdout
+	return function(email)
+		return vim.iter(stdout):any(function(line)
+			local _, line_email = line:match("^(.-) <%s*(.-)%s*>$")
+			return line_email == email
 		end)
-		:collect_list()
-		:map(function(data)
-			return function(email)
-				return vim.iter(data):any(function(d) return d.email == email end)
-			end
-		end)
-		:block()
+	end
 end
 
 --- @return { initials: string, name: string, email: string, active: boolean }[]
 GitMob.api.get_coauthors = function()
-	return Mono
-		--
-		.defer(function() return GitMob.api.run_command({ "git-mob", "--list" }) end)
-		:map(function(result) return result.stdout end)
-		:map(AuthorDetails.from_lines)
-		:flat_map_many(Flux.from)
-		:map(
-			function(coauthor_detail)
-				return {
-					initials = coauthor_detail.initials,
-					name = coauthor_detail.name,
-					email = coauthor_detail.email,
-					active = GitMob.api.is_coauthor_active()(coauthor_detail.email),
-				}
-			end
-		)
-		:collect_list()
-		:block()
+	local lines = GitMob.api.run_command({ "git-mob", "--list" }).stdout
+	local is_active = GitMob.api.is_coauthor_active()
+	return vim.iter(AuthorDetails.from_lines(lines))
+		:map(function(d)
+			return { initials = d.initials, name = d.name, email = d.email, active = is_active(d.email) }
+		end)
+		:totable()
 end
 
 --- @param initials_list string[]
@@ -63,44 +39,32 @@ GitMob.api.set_current_mobbers = function(initials_list)
 		GitMob.api.go_solo()
 		return
 	end
-
-	local cmd = { "git-mob" }
-	for _, initials in ipairs(initials_list) do
-		table.insert(cmd, initials)
-	end
-
-	GitMob.api.run_command(cmd)
+	GitMob.api.run_command(vim.list_extend({ "git-mob" }, initials_list))
 end
 
 --- @param initials string
 GitMob.api.toggle_coauthor = function(initials)
-	local coauthors = GitMob.api.get_coauthors()
-
-	local updated_coauthor_initials = vim.iter(coauthors)
-		:map(function(coauthor)
-			if coauthor.initials == initials then coauthor.active = not coauthor.active end
-			return coauthor
+	local active_initials = vim.iter(GitMob.api.get_coauthors())
+		:map(function(c)
+			if c.initials == initials then c.active = not c.active end
+			return c
 		end)
-		:filter(function(coauthor) return coauthor.active end)
-		:map(function(coauthor) return coauthor.initials end)
+		:filter(function(c) return c.active end)
+		:map(function(c) return c.initials end)
 		:totable()
-
-	GitMob.api.set_current_mobbers(updated_coauthor_initials)
+	GitMob.api.set_current_mobbers(active_initials)
 end
 
 --- @return { name: string, email: string }[]
 GitMob.api.get_current_mob = function()
-	return Mono
-		--
-		.defer(function() return GitMob.api.run_command({ "git-mob" }) end)
-		:flat_map_many(function(result) return Flux.from(result.stdout) end)
+	return vim.iter(GitMob.api.run_command({ "git-mob" }).stdout)
+		:filter(function(line) return line ~= "" end)
 		:map(function(line)
 			local name, email = line:match("^(.-) <%s*(.-)%s*>$")
-			if name then return { name = name, email = email } end
+			return { name = name, email = email }
 		end)
-		:collect_list()
-		:map(function(data) return vim.iter(data):filter(function(d) return d ~= nil end):totable() end)
-		:block()
+		:filter(function(d) return d.name ~= nil end)
+		:totable()
 end
 
 GitMob.api.go_solo = function() GitMob.api.run_command({ "git", "solo" }) end
