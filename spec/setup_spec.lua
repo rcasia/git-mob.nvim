@@ -51,4 +51,24 @@ describe("setup", function()
 
 		assert(notifications[1] == "Solo", ("Unexpected notification: %s"):format(notifications[1]))
 	end)
+
+	it(":GitMobSolo calls go_solo()", function()
+		local called = false
+		git_mob.api.go_solo = function() called = true end
+
+		git_mob.setup()
+		vim.cmd("GitMobSolo")
+
+		assert(called, "Expected go_solo() to have been called")
+	end)
+
+	it(":GitMobSelect calls ui.select_coauthors()", function()
+		local called = false
+		git_mob.ui.select_coauthors = function() called = true end
+
+		git_mob.setup()
+		vim.cmd("GitMobSelect")
+
+		assert(called, "Expected ui.select_coauthors() to have been called")
+	end)
 end)
