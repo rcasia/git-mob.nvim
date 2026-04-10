@@ -35,4 +35,20 @@ describe("ui", function()
 		assert(lines[1]:find("Alice Anders"), ("Expected Alice Anders in line 1: %s"):format(lines[1]))
 		assert(lines[2]:find("Bob Barnes"), ("Expected Bob Barnes in line 2: %s"):format(lines[2]))
 	end)
+
+	it("marks active co-authors with [*] and inactive with [ ]", function()
+		git_mob.api.get_coauthors = function()
+			return {
+				{ initials = "aa", name = "Alice Anders", email = "alice@example.org", active = true },
+				{ initials = "bb", name = "Bob Barnes", email = "bob@example.org", active = false },
+			}
+		end
+
+		local result = git_mob.ui.select_coauthors()
+		buf, win = result.buf, result.win
+
+		local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+		assert(lines[1]:sub(1, 3) == "[*]", ("Expected active marker in line 1: %s"):format(lines[1]))
+		assert(lines[2]:sub(1, 3) == "[ ]", ("Expected inactive marker in line 2: %s"):format(lines[2]))
+	end)
 end)
